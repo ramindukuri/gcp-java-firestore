@@ -29,52 +29,34 @@ public class QuickStart {
         }
 
         Firestore db = firestoreOptions.getService();
-        storeData(db);
-        readData(db);
+        String environment = "prod";
+        String project = "pipeline1";
+
+        String doc = environment+"-"+project ;
+        storeData(db,doc);
+        readData(db,doc);
     }
 
-    public static void storeData(Firestore db) {
-        DocumentReference docRef = db.collection("config").document("doc2");
+    public static void storeData(Firestore db,String doc) {
+
+        DocumentReference docRef = db.collection("config").document(doc);
         Map<String, Object> data = new HashMap<>();
-        data.put("environment", "dev");
-        data.put("project", "beam-pipeline1");
-        data.put("key", "Lovelace");
-        data.put("value", "1815");
+        data.put("loglevel", "info");
+        data.put("bootstrapservres", "localhost:9092");
         ApiFuture<WriteResult> result = docRef.set(data);
         try {
-            System.out.println("Update time : " + result.get().getUpdateTime());
+            System.out.println("Updated document " +doc +":" + " Time" + result.get().getUpdateTime());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
-    public static void readData(Firestore db) {
-        // asynchronously retrieve all users
-        ApiFuture<QuerySnapshot> query = db.collection("config").whereEqualTo("environment","dev").whereEqualTo("project", "pipeline1").get();
+    public static void readData(Firestore db,String doc) {
         try {
-            System.out.println(db.collection("config").document("doc1").get().get(30, TimeUnit.SECONDS).getData());
-        } catch (InterruptedException | TimeoutException e) {
+            System.out.println(db.collection("config").document(doc).get().get(30, TimeUnit.SECONDS).getData());
+        } catch (InterruptedException | TimeoutException |ExecutionException e) {
             e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        QuerySnapshot querySnapshot = null;
-        try {
-            querySnapshot = query.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-        for (QueryDocumentSnapshot document : documents) {
-            System.out.println("DocID: " + document.getId());
-            System.out.println("Env: " + document.getString("environment"));
-            System.out.println("project: " + document.getString("project"));
-            System.out.println("key: " + document.getString("key"));
-            System.out.println("value: " + document.getString("value"));
-
         }
     }
 
